@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_movie_app/database/database.dart';
 import 'package:flutter_movie_app/model/model.dart';
+import 'package:flutter_movie_app/screens/moview_view.dart';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
 
@@ -18,15 +20,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        title: 'Flutter Demo Home Page',
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
   final String title;
+
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -35,6 +39,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Movie> movies = List();
   bool hasLoaded = false;
+  MovieDatabase db;
 
   final PublishSubject<String> subject = PublishSubject();
 
@@ -42,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     subject.close();
     super.dispose();
+    db.closeDb();
   }
 
   void searchMovies(String query) {
@@ -82,6 +88,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    hasLoaded = true;
+    db = MovieDatabase();
+    db.initDB();
     subject.stream.debounce(Duration(milliseconds: 400)).listen(searchMovies);
   }
 
@@ -104,80 +113,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: EdgeInsets.all(10.0),
                 itemCount: movies.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return new MovieView(movies[index]);
+                  return new MovieView(movies[index], db);
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MovieView extends StatefulWidget {
-  final Movie movie;
-
-  MovieView(this.movie);
-
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return MovieViewState();
-  }
-}
-
-class MovieViewState extends State<MovieView> {
-  Movie movieState;
-
-  @override
-  void initState() {
-    super.initState();
-    movieState = widget.movie;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        height: 200.0,
-        padding: EdgeInsets.all(10.0),
-        child: Row(
-          children: <Widget>[
-            movieState.posterPath != null
-                ? Hero(
-                    child: Image.network("https://image.tmdb.org/t/p/w92${movieState.posterPath}"),
-                    tag: movieState.id,
-                  )
-                : Container(),
-            Expanded(
-              child: Stack(
-                children: <Widget>[
-                  Align(
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: Text(
-                        movieState.title,
-                        maxLines: 10,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      icon: movieState.favored ? Icon(Icons.star) : Icon(Icons.star_border),
-                      onPressed: () {},
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_downward),
-                      onPressed: () {},
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
