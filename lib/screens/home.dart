@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_movie_app/database/database.dart';
 import 'package:flutter_movie_app/model/model.dart';
 import 'package:flutter_movie_app/screens/moview_view.dart';
 import 'package:http/http.dart' as http;
@@ -21,7 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Movie> movies = List();
   bool hasLoaded = false;
-  MovieDatabase db;
+  //MovieDatabase db;
 
   final PublishSubject<String> subject = PublishSubject();
 
@@ -29,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     subject.close();
     super.dispose();
-    db.closeDb();
+    //db.closeDb();
   }
 
   void searchMovies(String query) {
@@ -71,18 +70,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     hasLoaded = true;
-    db = MovieDatabase();
-    db.initDB();
+    //db = MovieDatabase();
+    //db.initDB();
     subject.stream.debounce(Duration(milliseconds: 400)).listen(searchMovies);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Container(
+
+     return Container(
         padding: EdgeInsets.all(10.0),
         child: Column(
           children: <Widget>[
@@ -95,13 +91,12 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(10.0),
                 itemCount: movies.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return new MovieView(movies[index], db);
+                  return new MovieView(movies[index]);
                 },
               ),
             ),
           ],
         ),
-      ),
     );
   }
 }

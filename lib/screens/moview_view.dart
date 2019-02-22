@@ -4,9 +4,8 @@ import 'package:flutter_movie_app/model/model.dart';
 
 class MovieView extends StatefulWidget {
   final Movie movie;
-  final MovieDatabase database;
 
-  MovieView(this.movie, this.database);
+  MovieView(this.movie);
 
   @override
   State<StatefulWidget> createState() {
@@ -16,16 +15,27 @@ class MovieView extends StatefulWidget {
 
 class MovieViewState extends State<MovieView> {
   Movie movieState;
-  MovieDatabase db;
 
   @override
   void initState() {
     super.initState();
     movieState = widget.movie;
-    db = widget.database;
+    MovieDatabase db = MovieDatabase();
+    db.getMoview(movieState.id).then((movie){
+      setState(() {
+        movieState.favored = movie.favored;
+      });
+    });
+    //db = widget.database;
   }
 
   // Before this moment he used Card widject. but there is another better vidget ExpansionTile
+
+  void onPressed() {
+    MovieDatabase db = MovieDatabase();
+    setState(() => movieState.favored = !movieState.favored);
+    movieState.favored == true ? db.addMovie(movieState) : db.deleteMovie(movieState.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,12 +56,10 @@ class MovieViewState extends State<MovieView> {
         ),
       ],
       leading: IconButton(
-          icon: movieState.favored ? Icon(Icons.star) : Icon(Icons.star_border),
-          color: Colors.blue,
-          onPressed: () {
-            setState(() => movieState.favored = !movieState.favored);
-            movieState.favored == true ? db.addMovie(movieState) : db.deleteMovie(movieState.id);
-          }),
+        icon: movieState.favored ? Icon(Icons.star) : Icon(Icons.star_border),
+        color: Colors.blue,
+        onPressed: (){onPressed();},
+      ),
       title: Container(
         height: 200.0,
         padding: EdgeInsets.all(10.0),
@@ -60,7 +68,7 @@ class MovieViewState extends State<MovieView> {
             movieState.posterPath != null
                 ? Hero(
                     child: Image.network("https://image.tmdb.org/t/p/w92${movieState.posterPath}"),
-                    tag: movieState.id,
+                    tag: 'tag',//movieState.id,
                   )
                 : Container(),
             Expanded(
